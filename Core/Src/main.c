@@ -89,6 +89,24 @@ TIM_HandleTypeDef* GetInstance_Timer16(void)
 .Returns :
 .Note : use this function for all major initilization
 ******************************************************************************/
+TIM_HandleTypeDef* GetInstance_Timer1_P0(void)
+{
+	return (&(htim1));
+}
+/******************************.FUNCTION_HEADER.******************************
+.Purpose : This function serve as one time call function of application layer
+.Returns :
+.Note : use this function for all major initilization
+******************************************************************************/
+TIM_HandleTypeDef* GetInstance_Timer3_P1(void)
+{
+	return (&(htim3));
+}
+/******************************.FUNCTION_HEADER.******************************
+.Purpose : This function serve as one time call function of application layer
+.Returns :
+.Note : use this function for all major initilization
+******************************************************************************/
 ADC_HandleTypeDef* GetInstance_ADC1(void)
 {
 	return (&(hadc1));
@@ -234,8 +252,9 @@ static void MX_ADC1_Init(void)
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc1.Init.LowPowerAutoWait = DISABLE;
   hadc1.Init.LowPowerAutoPowerOff = DISABLE;
-  hadc1.Init.ContinuousConvMode = ENABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.DMAContinuousRequests = DISABLE;

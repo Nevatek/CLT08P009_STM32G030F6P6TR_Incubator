@@ -58,6 +58,8 @@ void Error_Handler(void);
 I2C_HandleTypeDef* GetInstance_I2C1(void);
 TIM_HandleTypeDef* GetInstance_Timer16(void);
 ADC_HandleTypeDef* GetInstance_ADC1(void);
+TIM_HandleTypeDef* GetInstance_Timer1_P0(void);
+TIM_HandleTypeDef* GetInstance_Timer3_P1(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
