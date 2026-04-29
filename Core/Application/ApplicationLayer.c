@@ -73,7 +73,7 @@ void ApplicationLayer_TemperatureControl_Init(void)
 	PID(&g_TPID_Cooler, &g_ApplCfg.fNtcTemp,
 			&g_ApplCfg.fPidOutput_Cooler,
 			&g_ApplCfg.fTargetTemperature,
-			  0.3, 0.5, 0.5,
+			  0.8, 0.5, 0.5,
 			  _PID_P_ON_M, _PID_CD_REVERSE);
 
 	PID_SetMode(&g_TPID_Cooler, _PID_MODE_AUTOMATIC);
@@ -85,7 +85,7 @@ void ApplicationLayer_TemperatureControl_Init(void)
 	PID(&g_TPID_Heater, &g_ApplCfg.fNtcTemp,
 			&g_ApplCfg.fPidOutput_Heater,
 			&g_ApplCfg.fTargetTemperature,
-			  0.3, 0.5, 0.5,
+			  0.8, 0.5, 0.5,
 			  _PID_P_ON_M, _PID_CD_DIRECT);
 
 	PID_SetMode(&g_TPID_Heater, _PID_MODE_AUTOMATIC);
