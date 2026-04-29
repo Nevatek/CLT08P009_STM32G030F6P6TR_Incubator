@@ -49,6 +49,8 @@ void Drv_SetPeltierPower(PELTIER_DIR_STATE m_Dir , uint8_t u8SpeedPercent)
 		}
 		else/*Peltier Dir OFF*/
 		{
+			Drv_SetTimerPwmDutycycle(GetInstance_Timer1_P0() , TIM_CHANNEL_4 , 0U/*%*/);
+			Drv_SetTimerPwmDutycycle(GetInstance_Timer3_P1() , TIM_CHANNEL_3 , 0U/*%*/);
 			HAL_GPIO_WritePin(PELTIER_DIR0_GPIO_Port, PELTIER_DIR0_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(PELTIER_DIR1_GPIO_Port, PELTIER_DIR1_Pin, GPIO_PIN_RESET);
 		}
