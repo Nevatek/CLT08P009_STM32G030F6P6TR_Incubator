@@ -8,7 +8,7 @@
 #ifndef DRIVERLAYER_DRV_THERMISTOR_H_
 #define DRIVERLAYER_DRV_THERMISTOR_H_
 
-#define NTC_TEMP_AVG_SAMPLE_TIMEOUT_MS			(5U)/*Ms*/
+#define NTC_TEMP_AVG_SAMPLE_TIMEOUT_MS			(10U)/*Ms*/
 /*NTC - PARAMETER - START*/
 #define SERIES_RESISTOR                         (10000.0f)      // R2 resistor value in ohms
 #define THERMISTOR_NOMINAL_RESISTANCE           (10000.0f)      // resistance at 25°C
