@@ -23,7 +23,6 @@
 /* USER CODE BEGIN Includes */
 #include "ApplicationLayer.h"
 #include "Drv_ET6226.h"
-#include "HI_GptTimer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -76,7 +75,24 @@ I2C_HandleTypeDef* GetInstance_I2C1(void)
 {
 	return (&(hi2c1));
 }
-
+/******************************.FUNCTION_HEADER.******************************
+.Purpose : This function serve as one time call function of application layer
+.Returns :
+.Note : use this function for all major initilization
+******************************************************************************/
+TIM_HandleTypeDef* GetInstance_Timer16(void)
+{
+	return (&(htim16));
+}
+/******************************.FUNCTION_HEADER.******************************
+.Purpose : This function serve as one time call function of application layer
+.Returns :
+.Note : use this function for all major initilization
+******************************************************************************/
+ADC_HandleTypeDef* GetInstance_ADC1(void)
+{
+	return (&(hadc1));
+}
 /******************************.FUNCTION_HEADER.******************************
 .Purpose : This function serve as one time call function of application layer
 .Returns :
@@ -96,7 +112,7 @@ void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
 /**
   * @brief  The application entry point.
   * @retval int
-  */int speed = 40;
+  */
 int main(void)
 {
 
@@ -135,16 +151,11 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   ApplicationLayer_Init();/*Application layer code init*/
-
-  Drv_SetTimerPeriod(&htim16 , CONVERT_HZ_TO_US(100));
-  Drv_SetTimerPwmDutycycle(&htim16 , TIM_CHANNEL_1 , speed);
-  Drv_StartTimerPwm(&htim16 , TIM_CHANNEL_1);
-
   while (1)
   {
 	  ApplicationLayer_Exe();/*Application layer code exe (SUPER LOOP)*/
     /* USER CODE END WHILE */
-	  Drv_SetTimerPwmDutycycle(&htim16 , TIM_CHANNEL_1 , speed);
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -223,9 +234,8 @@ static void MX_ADC1_Init(void)
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc1.Init.LowPowerAutoWait = DISABLE;
   hadc1.Init.LowPowerAutoPowerOff = DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.NbrOfConversion = 1;
-  hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.DMAContinuousRequests = DISABLE;

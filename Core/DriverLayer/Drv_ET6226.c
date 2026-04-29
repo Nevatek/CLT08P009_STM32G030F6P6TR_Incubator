@@ -363,7 +363,7 @@ void ET6226M_DisplayNumber(uint16_t value)
     tempData = ET6226M_DigitTable[digits[ET6226M_PKT_DISPLAY_GR2]];
     if(tempData != g_txPacket[ET6226M_PKT_DISPLAY_GR2].data)
     {
-        g_txPacket[ET6226M_PKT_DISPLAY_GR2].data = tempData;
+        g_txPacket[ET6226M_PKT_DISPLAY_GR2].data = tempData | ET6226M_SEG_DP;/*Enable dp*/
         ET6226M_SetFlag(ET6226M_FLAG_GR2);
     }
 

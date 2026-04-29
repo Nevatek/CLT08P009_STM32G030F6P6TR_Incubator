@@ -56,7 +56,8 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 I2C_HandleTypeDef* GetInstance_I2C1(void);
-
+TIM_HandleTypeDef* GetInstance_Timer16(void);
+ADC_HandleTypeDef* GetInstance_ADC1(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -66,8 +67,6 @@ I2C_HandleTypeDef* GetInstance_I2C1(void);
 #define NCC15_GPIO_Port GPIOC
 #define NTC_ADC_0_Pin GPIO_PIN_0
 #define NTC_ADC_0_GPIO_Port GPIOA
-#define NTC_ADC_1_Pin GPIO_PIN_1
-#define NTC_ADC_1_GPIO_Port GPIOA
 #define TC_Pin GPIO_PIN_4
 #define TC_GPIO_Port GPIOA
 #define PELTIER_DIR0_Pin GPIO_PIN_5

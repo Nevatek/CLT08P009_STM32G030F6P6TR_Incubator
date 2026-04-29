@@ -6,7 +6,6 @@
  */
 #include "main.h"
 #include "ErrorCode.h"
-#include <stdbool.h>
 #include "HI_GptTimer.h"
 /*********************.HAL_GPIO_EXTI_Callback().*****************************
  .Purpose        : Callback for GPIO interrupt Rising and falling
