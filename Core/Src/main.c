@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "ApplicationLayer.h"
 #include "Drv_ET6226.h"
+#include "HI_GptTimer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -95,7 +96,7 @@ void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
 /**
   * @brief  The application entry point.
   * @retval int
-  */
+  */int speed = 40;
 int main(void)
 {
 
@@ -134,11 +135,16 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   ApplicationLayer_Init();/*Application layer code init*/
+
+  Drv_SetTimerPeriod(&htim16 , CONVERT_HZ_TO_US(100));
+  Drv_SetTimerPwmDutycycle(&htim16 , TIM_CHANNEL_1 , speed);
+  Drv_StartTimerPwm(&htim16 , TIM_CHANNEL_1);
+
   while (1)
   {
 	  ApplicationLayer_Exe();/*Application layer code exe (SUPER LOOP)*/
     /* USER CODE END WHILE */
-
+	  Drv_SetTimerPwmDutycycle(&htim16 , TIM_CHANNEL_1 , speed);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -465,18 +471,18 @@ static void MX_TIM16_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_TIM_OC_Init(&htim16) != HAL_OK)
+  if (HAL_TIM_PWM_Init(&htim16) != HAL_OK)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_TIMING;
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
   sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-  if (HAL_TIM_OC_ConfigChannel(&htim16, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  if (HAL_TIM_PWM_ConfigChannel(&htim16, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
   }
