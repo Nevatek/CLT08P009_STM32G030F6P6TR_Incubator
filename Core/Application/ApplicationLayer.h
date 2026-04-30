@@ -11,7 +11,7 @@
 #define DISPLAY_REFRESH_TIMEOUT_MS 		(500U)
 #define INCUBATOR_TARGET_TEMPERATURE 	(25U)/*25 Degree Celcuis*/
 
-#define TEMPERATURE_WINDUP_OFFSET	 	(0U)/*0.3 Degree Celcuis*/
+#define TEMPERATURE_WINDUP_OFFSET	 	(0.05f)/*0.3 Degree Celcuis*/
 #define PID_SAMPLE_TIME_MS 				(10U)
 
 typedef struct
