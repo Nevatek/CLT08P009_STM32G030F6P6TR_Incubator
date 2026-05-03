@@ -57,7 +57,7 @@
 
 #define I2C_DATA_SIZE 			(1U)	//2 bytes
 
-#define ET6226M_TOTAL_DIGITS	(10U) 	// Total no of digits possible
+#define ET6226M_TOTAL_DIGITS	(11U) 	// Total no of digits possible
 
 #define ET6226M_FLAG_GR1    (1U << 0)
 #define ET6226M_FLAG_GR2   	(1U << 1)
@@ -65,9 +65,15 @@
 //#define ET6226M_FLAG_GR4    (1U << 3)
 #define ET6226M_FLAG_CTRL   (1U << 4)
 
-#define ET6226M_MAX_DISPLAY (999U)
+#define ET6226M_MIN_DISPLAY (-99)
+#define ET6226M_MAX_DISPLAY (999)
 #define ET6226M_DIGIT_COUNT (3U)
 
+#define MIN_NEGATIVE_INTEGER	10U
+#define MIN_POSITIVE_INTEGER	100U
+
+#define ET6226M_MIX_DISPLAY	(-99)
+#define ET6226M_MAX_DISPLAY (999)
 
 /****************************************************************************/
 /* Typedefs/Structure/Union definitions & declarations						*/
@@ -160,22 +166,22 @@ static const uint8_t ET6226M_DigitTable[ET6226M_TOTAL_DIGITS] =
 				ET6226M_SEG_SG7),
 
 		/* 9 */ (ET6226M_SEG_SG1 | ET6226M_SEG_SG2 | ET6226M_SEG_SG3 |
-				ET6226M_SEG_SG4 | ET6226M_SEG_SG6 | ET6226M_SEG_SG7)
+				ET6226M_SEG_SG4 | ET6226M_SEG_SG6 | ET6226M_SEG_SG7),
+
+		/*-sign*/ ET6226M_SEG_SG7
 };
 
 static I2C_HandleTypeDef* g_i2cHandler = NULL;
 static volatile ET6226M_I2C_State_t g_i2cState = ET6226M_I2C_IDLE;
 static volatile uint8_t g_TransferFlags = 0;
-static uint8_t currentTransferFlag = 0;
 static uint8_t tempData = 0;
+static bool g_PacketFlags[ET6226M_PKT_MAX] = {0};
+static ET6226M_PacketId_t packetId = ET6226M_PKT_DISPLAY_GR1;
+
 
 /****************************************************************************/
 /* Function Declarations												*/
 /****************************************************************************/
-
-static void ET6226M_SetField(EtFieldId_t type, uint8_t value);
-static void ET6226M_SetFlag(uint8_t flag);
-static void ET6226M_ClearFlag(uint8_t flag);
 
 static void i2c_write(ET6226M_PacketId_t PacketId);
 void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c);
@@ -202,7 +208,7 @@ void ET6226M_Init()
 	ET6226M_SetOperation(ET6226M_WAKE);
 	ET6226M_SetDisplayState(ET6226M_ON);
 
-	ET6226M_DisplayNumber(123);
+	ET6226M_DisplayNumber(-12.35);
 }
 
 /******************************.FUNCTION_HEADER.******************************
@@ -232,7 +238,7 @@ ErrorCode ET6226M_SetBrightness(ET6226M_BrightLevel_t level)
 	if (level <= ET6226M_BRIGHT_LEVEL_7)
 	{
 		ET6226M_SetField(ET_FIELD_BRIGHTNESS, (uint8_t)level);
-        ET6226M_SetFlag(ET6226M_FLAG_CTRL);
+        g_PacketFlags[ET6226M_PKT_CONTROL] = true;
 		status = ErrorCode_Success;
 	}
 
@@ -251,7 +257,7 @@ ErrorCode ET6226M_SetMode(ET6226M_Mode_t mode)
 	if (mode <= ET6226M_8_SEGMENT)
 	{
 		ET6226M_SetField(ET_FIELD_MODE, (uint8_t)mode);
-        ET6226M_SetFlag(ET6226M_FLAG_CTRL);
+        g_PacketFlags[ET6226M_PKT_CONTROL] = true;
 		status = ErrorCode_Success;
 	}
 
@@ -270,8 +276,7 @@ ErrorCode ET6226M_SetOperation(ET6226M_Operation_t operation)
 	if (operation <= ET6226M_WAKE)
 	{
 		ET6226M_SetField(ET_FIELD_SLEEP, (uint8_t)operation);
-        ET6226M_SetFlag(ET6226M_FLAG_CTRL);
-
+        g_PacketFlags[ET6226M_PKT_CONTROL] = true;
 		status = ErrorCode_Success;
 	}
 
@@ -290,8 +295,7 @@ ErrorCode ET6226M_SetDisplayState(ET6226M_Display_t state)
 	if (state <= ET6226M_ON)
 	{
 		ET6226M_SetField(ET_FIELD_DISPLAY, (uint8_t)state);
-        ET6226M_SetFlag(ET6226M_FLAG_CTRL);
-
+        g_PacketFlags[ET6226M_PKT_CONTROL] = true;
 		status = ErrorCode_Success;
 	}
 
@@ -303,77 +307,71 @@ ErrorCode ET6226M_SetDisplayState(ET6226M_Display_t state)
 .Returns :
 .Note : use this function for all major initilization
 ******************************************************************************/
-static void ET6226M_SetFlag(uint8_t flag)
+void ET6226M_DisplayNumber(float value)
 {
-	g_TransferFlags |= flag;
-}
+	float floatValue = 0;
+	uint16_t intPart 	= 0;
+	uint8_t decimalPart = 0;
+	uint8_t currentDgits = ET6226M_DIGIT_COUNT-1;
 
-/******************************.FUNCTION_HEADER.******************************
-.Purpose : This function serve as one time call function of application layer
-.Returns :
-.Note : use this function for all major initilization
-******************************************************************************/
-static void ET6226M_ClearFlag(uint8_t flag)
-{
-	g_TransferFlags &= (uint8_t)~flag;
-}
+	bool IsNegative = false;
 
-/******************************.FUNCTION_HEADER.******************************
-.Purpose : This function serve as one time call function of application layer
-.Returns :
-.Note : use this function for all major initilization
-******************************************************************************/
-static inline bool ET6226M_IsFlagSet(uint8_t flag)
-{
-    return ((g_TransferFlags & flag) != 0U);
-}
-/******************************.FUNCTION_HEADER.******************************
-.Purpose : This function serve as one time call function of application layer
-.Returns :
-.Note : use this function for all major initilization
-******************************************************************************/
-void ET6226M_DisplayNumber(uint16_t value)
-{
-    uint16_t tempData = value;
-    uint8_t digits[ET6226M_DIGIT_COUNT];
+	uint8_t digits[ET6226M_DIGIT_COUNT] = {0};
 
-    /* limit to 999 */
-    if (tempData > ET6226M_MAX_DISPLAY)
+	floatValue = (value < ET6226M_MIX_DISPLAY) ? ET6226M_MIX_DISPLAY : value;
+	floatValue = (value > ET6226M_MAX_DISPLAY) ? ET6226M_MAX_DISPLAY : value;
+
+	if(floatValue < 0)
+	{
+		floatValue = -floatValue;
+		IsNegative = true;
+	}
+
+
+	intPart 	= (uint16_t)floatValue;
+	decimalPart = (uint8_t)((floatValue - intPart) * 10); // 1 decimal place
+
+	if((decimalPart) &&
+			(((IsNegative == true) && (intPart < MIN_NEGATIVE_INTEGER)) ||
+			((IsNegative == false) && (intPart < MIN_POSITIVE_INTEGER)))
+	)
+	{
+		digits[currentDgits] = decimalPart;
+		currentDgits--;
+	}
+
+	while(currentDgits >= 0)
+	{
+		digits[currentDgits] = (uint8_t)(intPart % 10U);
+		intPart /= 10U;
+
+		if (intPart == 0)
+		{
+			break;
+		}
+		currentDgits--;
+	}
+
+	if(IsNegative == true)
+	{
+		digits[currentDgits] = 10U;
+	}
+
+    for(int i = 0; i < (ET6226M_DIGIT_COUNT); i++)
     {
-    	tempData = ET6226M_MAX_DISPLAY;
+    	uint8_t prevValue = ET6226M_DigitTable[digits[i]];
+
+        if(prevValue != g_txPacket[i].data)
+        {
+            g_txPacket[i].data = prevValue;
+            g_PacketFlags[i] = true;
+        }
     }
 
-    digits[ET6226M_PKT_DISPLAY_GR3] = (uint8_t)(tempData % 10U);
-    tempData /= 10U;
-
-    digits[ET6226M_PKT_DISPLAY_GR2] = (uint8_t)(tempData % 10U);
-    tempData /= 10U;
-
-    digits[ET6226M_PKT_DISPLAY_GR1] = (uint8_t)(tempData % 10U);
-
-    /* update display packets */
-    tempData = ET6226M_DigitTable[digits[ET6226M_PKT_DISPLAY_GR1]];
-    if(tempData != g_txPacket[ET6226M_PKT_DISPLAY_GR1].data)
-    {
-        g_txPacket[ET6226M_PKT_DISPLAY_GR1].data = tempData;
-        ET6226M_SetFlag(ET6226M_FLAG_GR1);
-    }
-
-    /* update display packets */
-    tempData = ET6226M_DigitTable[digits[ET6226M_PKT_DISPLAY_GR2]];
-    if(tempData != g_txPacket[ET6226M_PKT_DISPLAY_GR2].data)
-    {
-        g_txPacket[ET6226M_PKT_DISPLAY_GR2].data = tempData | ET6226M_SEG_DP;/*Enable dp*/
-        ET6226M_SetFlag(ET6226M_FLAG_GR2);
-    }
-
-    /* update display packets */
-    tempData = ET6226M_DigitTable[digits[ET6226M_PKT_DISPLAY_GR3]];
-    if(tempData != g_txPacket[ET6226M_PKT_DISPLAY_GR3].data)
-    {
-        g_txPacket[ET6226M_PKT_DISPLAY_GR3].data = tempData;
-        ET6226M_SetFlag(ET6226M_FLAG_GR3);
-    }
+	if(decimalPart)
+	{
+		g_txPacket[ET6226M_PKT_DISPLAY_GR2].data |=  ET6226M_SEG_DP;
+	}
 }
 
 /******************************.FUNCTION_HEADER.******************************
@@ -385,29 +383,14 @@ void ET6226M_RefreshDisplay(void)
 {
     if (ET6226M_I2C_GetState() == ET6226M_I2C_IDLE)
     {
-        /* GR1 */
-        if (ET6226M_IsFlagSet(ET6226M_FLAG_GR1) == true)
+    	if(packetId >= ET6226M_PKT_MAX)
+    	{
+            packetId = ET6226M_PKT_DISPLAY_GR1;
+    	}
+        /* Check if Packed change flag is enabled */
+        if (g_PacketFlags[packetId] == true)
         {
-        	i2c_write(ET6226M_PKT_DISPLAY_GR1);
-        	currentTransferFlag = ET6226M_FLAG_GR1;
-        }
-        /* GR2 */
-        else if (ET6226M_IsFlagSet(ET6226M_FLAG_GR2) == true)
-        {
-        	i2c_write(ET6226M_PKT_DISPLAY_GR2);
-        	currentTransferFlag = ET6226M_FLAG_GR2;
-        }
-        /* GR3 */
-        else if (ET6226M_IsFlagSet(ET6226M_FLAG_GR3) == true)
-        {
-        	i2c_write(ET6226M_PKT_DISPLAY_GR3);
-        	currentTransferFlag = ET6226M_FLAG_GR3;
-        }
-        /* GR4 */
-        else if (ET6226M_IsFlagSet(ET6226M_FLAG_CTRL) == true)
-        {
-        	i2c_write(ET6226M_PKT_CONTROL);
-        	currentTransferFlag = ET6226M_FLAG_CTRL;
+        	i2c_write(packetId);
         }
     }
 }
@@ -432,7 +415,8 @@ void ET6226M_TransferCompleteCallback(I2C_HandleTypeDef *hi2c)
 	if(hi2c != NULL)
 	{
 		g_i2cState = ET6226M_I2C_IDLE;
-        ET6226M_ClearFlag(currentTransferFlag);
+		g_PacketFlags[packetId] = false;
+		packetId++;
 	}
 }
 
@@ -443,9 +427,8 @@ void ET6226M_TransferCompleteCallback(I2C_HandleTypeDef *hi2c)
  ******************************************************************************/
 static void i2c_write(ET6226M_PacketId_t PacketId)
 {
-	if (PacketId >= ET6226M_PKT_MAX )
+	if (PacketId >= ET6226M_PKT_MAX)
 	{
-        ET6226M_ClearFlag(currentTransferFlag);
         return;
 	}
 
