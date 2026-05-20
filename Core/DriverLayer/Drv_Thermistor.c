@@ -11,7 +11,7 @@
 #include "Timer.h"
 #include "Drv_Thermistor.h"
 
-#define MAX_ADC_DATA_CNT 	(10U)
+#define MAX_ADC_DATA_CNT 	(100U)
 
 static TimerTimeOut g_TempAvgTimer;
 static float fCurrTempC = 0.0f;
