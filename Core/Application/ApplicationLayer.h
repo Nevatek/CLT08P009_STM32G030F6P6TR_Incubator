@@ -8,7 +8,7 @@
 #ifndef APPLICATION_APPLICATIONLAYER_H_
 #define APPLICATION_APPLICATIONLAYER_H_
 
-#define DISPLAY_REFRESH_TIMEOUT_MS 		(10000U)
+#define DISPLAY_REFRESH_TIMEOUT_MS 		(5000U)
 #define INCUBATOR_TARGET_TEMPERATURE 	(25U)/*25 Degree Celcuis*/
 
 #define TEMPERATURE_WINDUP_OFFSET	 	(0U)/*0.3 Degree Celcuis*/
@@ -16,8 +16,8 @@
 
 typedef struct
 {
-	uint32_t u8ExFanSpeedPercent : 16U;
-	uint32_t u8PeltierControlPercent : 16U;
+	uint16_t u8ExFanSpeedPercent;
+	uint16_t u8PeltierControlPercent;
 	float fTargetTemperature;
 	float fNtcTemp;
 	float fPidOutput_Heater;

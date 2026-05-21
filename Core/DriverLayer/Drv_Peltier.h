@@ -8,7 +8,7 @@
 #ifndef DRIVERLAYER_DRV_PELTIER_H_
 #define DRIVERLAYER_DRV_PELTIER_H_
 
-#define PELTIER_DIR_SWITCH_HYSTERISIS_TIMEOUT_MS (1U)
+#define PELTIER_DIR_SWITCH_HYSTERISIS_TIMEOUT_MS (20U)
 
 typedef enum
 {
@@ -18,5 +18,6 @@ typedef enum
 }PELTIER_DIR_STATE;
 
 void Drv_Peltier_Init(void);
-void Drv_SetPeltierPower(PELTIER_DIR_STATE m_Dir , uint8_t u8SpeedPercent);
+void Drv_SetPeltierPower(PELTIER_DIR_STATE m_NewDir , uint8_t u8SpeedPercent);
+PELTIER_DIR_STATE Drv_GetPeltierDirection(void);
 #endif /* DRIVERLAYER_DRV_PELTIER_H_ */
