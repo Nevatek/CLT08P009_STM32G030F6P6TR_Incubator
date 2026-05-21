@@ -69,8 +69,14 @@ TIM_HandleTypeDef* GetInstance_Timer3_P1(void);
 #define NCC15_GPIO_Port GPIOC
 #define NTC_ADC_0_Pin GPIO_PIN_0
 #define NTC_ADC_0_GPIO_Port GPIOA
-#define TC_Pin GPIO_PIN_4
-#define TC_GPIO_Port GPIOA
+#define NCA1_Pin GPIO_PIN_1
+#define NCA1_GPIO_Port GPIOA
+#define NCA2_Pin GPIO_PIN_2
+#define NCA2_GPIO_Port GPIOA
+#define NCA3_Pin GPIO_PIN_3
+#define NCA3_GPIO_Port GPIOA
+#define NCA4_Pin GPIO_PIN_4
+#define NCA4_GPIO_Port GPIOA
 #define PELTIER_DIR0_Pin GPIO_PIN_5
 #define PELTIER_DIR0_GPIO_Port GPIOA
 #define FAN_PWM_Pin GPIO_PIN_6
