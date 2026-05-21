@@ -88,6 +88,7 @@ void ApplicationLayer_TemperatureControl_Init(void)
 ******************************************************************************/
 void ApplicationLayer_TemperatureControl_Exe(void)
 {
+	PELTIER_DIR_STATE m_PeltierDir = Drv_GetPeltierDirection();
 	/*Display control - START*/
 	g_ApplCfg.fNtcTemp = Drv_GetCurrentTemperature();
 	if(TRUE == TimeOut_IsTimerRunning(&(g_DispRefreshTimer)))
@@ -110,16 +111,16 @@ void ApplicationLayer_TemperatureControl_Exe(void)
 	/*Calculate delta change in temperature*/
 	PID_Compute(&g_TPID_Cooler);
 
-	if((g_ApplCfg.fNtcTemp >
-				(TEMPERATURE_WINDUP_OFFSET + g_ApplCfg.fTargetTemperature)))/*cooldown*/
+	/*When NTC temp is greater than 25 deg celcuis - Perform COOLING*/
+	if((TEMPERATURE_WINDUP_OFFSET + g_ApplCfg.fTargetTemperature) < g_ApplCfg.fNtcTemp)/*cooldown*/
 	{
 		g_ApplCfg.u8PeltierControlPercent =
 				g_ApplCfg.u8ExFanSpeedPercent = (uint8_t)g_ApplCfg.fPidOutput_Cooler;
 		Drv_SetPeltierPower(PELTIER_DIR_COOL , g_ApplCfg.u8PeltierControlPercent);
 		PID_SetControllerDirection(&g_TPID_Cooler , _PID_CD_REVERSE);
 	}
-	else if((g_ApplCfg.fNtcTemp <
-			(g_ApplCfg.fTargetTemperature - TEMPERATURE_WINDUP_OFFSET)))/*Heatup*/
+	/*When NTC temp is Lesser than 25 deg celcuis - Perform HEATING*/
+	else if((g_ApplCfg.fTargetTemperature - TEMPERATURE_WINDUP_OFFSET) > g_ApplCfg.fNtcTemp)/*Heatup*/
 	{
 		g_ApplCfg.u8PeltierControlPercent =
 				g_ApplCfg.u8ExFanSpeedPercent = (uint8_t)g_ApplCfg.fPidOutput_Cooler;
