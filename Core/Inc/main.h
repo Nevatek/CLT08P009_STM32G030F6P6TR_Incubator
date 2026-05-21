@@ -49,17 +49,17 @@ extern "C" {
 
 /* USER CODE END EM */
 
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 I2C_HandleTypeDef* GetInstance_I2C1(void);
-TIM_HandleTypeDef* GetInstance_Timer16(void);
 ADC_HandleTypeDef* GetInstance_ADC1(void);
+#if (PELTIER_PID_CONTROL)
+TIM_HandleTypeDef* GetInstance_Timer16(void);
 TIM_HandleTypeDef* GetInstance_Timer1_P0(void);
 TIM_HandleTypeDef* GetInstance_Timer3_P1(void);
+#endif
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -77,16 +77,16 @@ TIM_HandleTypeDef* GetInstance_Timer3_P1(void);
 #define NCA3_GPIO_Port GPIOA
 #define NCA4_Pin GPIO_PIN_4
 #define NCA4_GPIO_Port GPIOA
-#define PELTIER_DIR0_Pin GPIO_PIN_5
-#define PELTIER_DIR0_GPIO_Port GPIOA
-#define FAN_PWM_Pin GPIO_PIN_6
-#define FAN_PWM_GPIO_Port GPIOA
-#define PELTIER_DIR1_Pin GPIO_PIN_7
-#define PELTIER_DIR1_GPIO_Port GPIOA
-#define PELTIER_PWM1_Pin GPIO_PIN_0
-#define PELTIER_PWM1_GPIO_Port GPIOB
-#define PELTIER_PWM0_Pin GPIO_PIN_11
-#define PELTIER_PWM0_GPIO_Port GPIOA
+#define PELTIER_SIG_CH0_Pin GPIO_PIN_5
+#define PELTIER_SIG_CH0_GPIO_Port GPIOA
+#define FAN_ENABLE_Pin GPIO_PIN_6
+#define FAN_ENABLE_GPIO_Port GPIOA
+#define PELTIER_SIG_CH1_Pin GPIO_PIN_7
+#define PELTIER_SIG_CH1_GPIO_Port GPIOA
+#define PELTIER_DIR_CH1_Pin GPIO_PIN_8
+#define PELTIER_DIR_CH1_GPIO_Port GPIOA
+#define PELTIER_DIR_CH0_Pin GPIO_PIN_11
+#define PELTIER_DIR_CH0_GPIO_Port GPIOA
 #define NCA12_Pin GPIO_PIN_12
 #define NCA12_GPIO_Port GPIOA
 

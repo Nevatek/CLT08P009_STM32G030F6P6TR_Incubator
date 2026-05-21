@@ -12,15 +12,20 @@ Author Date Description
 #include "math.h"
 #include "Datatype.h"
 #include "Timer.h"
+#if (PELTIER_PID_CONTROL)
 #include "pid.h"
+#endif
 #include "Drv_ET6226.h"
 #include "Drv_ExhaustFan.h"
 #include "Drv_Thermistor.h"
 #include "Drv_Peltier.h"
 #include "ApplicationLayer.h"
 
-static APPL g_ApplCfg;
+#if (PELTIER_PID_CONTROL)
 static PID_TypeDef g_TPID_Cooler;
+#endif
+static TimerTimeOut g_PeltierDirSwitchTimer;
+static APPL g_ApplCfg;
 static TimerTimeOut g_DispRefreshTimer;
 /******************************.FUNCTION_HEADER.******************************
 .Purpose : This function serve as one time call function of application layer
@@ -65,8 +70,8 @@ void ApplicationLayer_TemperatureControl_Init(void)
 	TimeOut_Init(&(g_DispRefreshTimer));
 	TimeOut_Start(&(g_DispRefreshTimer) , DISPLAY_REFRESH_TIMEOUT_MS);
 
-	g_ApplCfg.fTargetTemperature 	= INCUBATOR_TARGET_TEMPERATURE;
-
+	g_ApplCfg.fTargetTemperature = INCUBATOR_TARGET_TEMPERATURE;
+#if (PELTIER_PID_CONTROL)
 	/*PID - COOLER - START*/
 	PID(&g_TPID_Cooler, &g_ApplCfg.fNtcTemp,
 			&g_ApplCfg.fPidOutput_Cooler,
@@ -78,7 +83,10 @@ void ApplicationLayer_TemperatureControl_Init(void)
 	PID_SetSampleTime(&g_TPID_Cooler, PID_SAMPLE_TIME_MS/*Miiliseconds*/);
 	PID_SetOutputLimits(&g_TPID_Cooler, 1/*%*/, 100U/*%*/);
 	/*PID - COOLER - END*/
-
+#else
+	Drv_SetPeltierPower(PELTIER_ST_OFF);
+	Drv_SetPeltierDirection(PELTIER_DIR_COOL);/*COOL now*/
+#endif
 	Drv_SetSpeedExhaustFan(g_ApplCfg.u8ExFanSpeedPercent = 100U);
 }
 /******************************.FUNCTION_HEADER.******************************
@@ -95,7 +103,36 @@ void ApplicationLayer_TemperatureControl_Exe(void)
 	{
 		if(TRUE == TimeOut_IsTimeout(&(g_DispRefreshTimer)))
 		{
-			ET6226M_DisplayNumber(g_ApplCfg.fNtcTemp * 10);
+			/*If temperature of NTC is in most accuracy region, Then display actual NTC temperature*/
+			if(g_ApplCfg.fNtcTemp < (g_ApplCfg.fTargetTemperature + DISPLAY_ACCURACY_OFFSET_MIN)
+					&& g_ApplCfg.fNtcTemp > (g_ApplCfg.fTargetTemperature - DISPLAY_ACCURACY_OFFSET_MIN))
+			{
+				ET6226M_DisplayNumber_F(g_ApplCfg.fNtcTemp);
+				g_ApplCfg.u8TempAchievedFlag = TRUE;/*Temperature achieved its target accuracy region*/
+			}
+			/*If temperature of NTC is out of accuracy region, Then display actual NTC temperature*/
+			else
+			{
+				/*Exceded out of max accuracy region*/
+				if(g_ApplCfg.fNtcTemp > (g_ApplCfg.fTargetTemperature + DISPLAY_ACCURACY_OFFSET_MAX)
+										|| g_ApplCfg.fNtcTemp < (g_ApplCfg.fTargetTemperature - DISPLAY_ACCURACY_OFFSET_MAX))
+				{
+					ET6226M_DisplayNumber_F(g_ApplCfg.fNtcTemp);
+					g_ApplCfg.u8TempAchievedFlag = FALSE;/*Temperature over shoots its target accuracy region*/
+				}
+				else
+				{
+					/*Just out of accuracy region, but temp achieved flag not enabled*/
+					if(FALSE == g_ApplCfg.u8TempAchievedFlag)
+					{
+						ET6226M_DisplayNumber_F(g_ApplCfg.fNtcTemp);
+					}
+					else
+					{
+						/*NOP*/
+					}
+				}
+			}
 		}
 		else
 		{
@@ -107,7 +144,7 @@ void ApplicationLayer_TemperatureControl_Exe(void)
 		TimeOut_Restart(&(g_DispRefreshTimer));
 	}
 	/*Display control - END*/
-
+#if (PELTIER_PID_CONTROL)
 	/*Calculate delta change in temperature*/
 	PID_Compute(&g_TPID_Cooler);
 
@@ -131,4 +168,95 @@ void ApplicationLayer_TemperatureControl_Exe(void)
 	{
 		Drv_SetPeltierPower(PELTIER_DIR_OFF , g_ApplCfg.u8PeltierControlPercent);
 	}
+#else
+	/*If NTC temperature is VALID*/
+	if(MIN_VALID_NTC_TEMPERATURE < g_ApplCfg.fNtcTemp &&
+			MAX_VALID_NTC_TEMPERATURE > g_ApplCfg.fNtcTemp )
+	{
+		if(PELTIER_DIR_COOL == m_PeltierDir)/*If current dir is COOLING*/
+		{
+			/*Wait for temperature of NTC fall below target - windup temperature*/
+			if((g_ApplCfg.fTargetTemperature - (TEMPERATURE_COOL_WINDUP_DIR_SW_OFFSET)) > g_ApplCfg.fNtcTemp)
+			{
+				if(TRUE == TimeOut_IsTimerRunning(&(g_PeltierDirSwitchTimer)))/*If timer is running*/
+				{
+					if(TRUE == TimeOut_IsTimeout(&(g_PeltierDirSwitchTimer)))/*When timer is expired*/
+					{
+						Drv_SetPeltierDirection(PELTIER_DIR_HEAT);/*Switch to HEAT now*/
+						TimeOut_Stop(&(g_PeltierDirSwitchTimer));
+					}
+				}
+				else/*If timer is not running*/
+				{
+					TimeOut_Init(&(g_PeltierDirSwitchTimer));/*Initilize timer*/
+					TimeOut_Start(&(g_PeltierDirSwitchTimer) , PELTIER_DIR_SWITCH_HYSTERISIS_TIMEOUT_MS/*MS*/);/*Start Timer*/
+					/*Switch to DIR OFF now*/
+					HAL_GPIO_WritePin(PELTIER_DIR_CH0_GPIO_Port, PELTIER_DIR_CH0_Pin, GPIO_PIN_RESET);/*TURN OFF CH 0 - HIGH SIDE MOSFET*/
+					HAL_GPIO_WritePin(PELTIER_DIR_CH1_GPIO_Port, PELTIER_DIR_CH1_Pin, GPIO_PIN_RESET);/*TURN OFF CH 1 - HIGH SIDE MOSFET*/
+				}
+			}
+			/*If temperature of NTC is between target and cool windup*/
+			else if((g_ApplCfg.fTargetTemperature + TEMPERATURE_HEAT_WINDUP_OFFSET) > g_ApplCfg.fNtcTemp)
+			{
+				/*Turn OFF - SIGNAL FET*/
+				Drv_SetPeltierPower(PELTIER_ST_OFF);
+				g_ApplCfg.u8PeltierControlPercent = 0U;
+			}
+			else/*If NTC temperature is above target - COOL*/
+			{
+				Drv_SetPeltierPower(PELTIER_ST_ON);
+				g_ApplCfg.u8PeltierControlPercent = 100U;
+			}
+		}
+		else if(PELTIER_DIR_HEAT == m_PeltierDir)/*If current dir is HEATING*/
+		{
+			/*Wait for temperature of NTC fall above target + windup temperature*/
+			if((g_ApplCfg.fTargetTemperature + TEMPERATURE_HEAT_WINDUP_DIR_SW_OFFSET) < g_ApplCfg.fNtcTemp)
+			{
+				if(TRUE == TimeOut_IsTimerRunning(&(g_PeltierDirSwitchTimer)))/*If timer is running*/
+				{
+					if(TRUE == TimeOut_IsTimeout(&(g_PeltierDirSwitchTimer)))/*When timer is expired*/
+					{
+						Drv_SetPeltierDirection(PELTIER_DIR_COOL);/*Switch to COOL now*/
+						TimeOut_Stop(&(g_PeltierDirSwitchTimer));
+					}
+				}
+				else/*If timer is not running*/
+				{
+					TimeOut_Init(&(g_PeltierDirSwitchTimer));/*Initilize timer*/
+					TimeOut_Start(&(g_PeltierDirSwitchTimer) , PELTIER_DIR_SWITCH_HYSTERISIS_TIMEOUT_MS/*MS*/);/*Start Timer*/
+					/*Switch to DIR OFF now*/
+					HAL_GPIO_WritePin(PELTIER_DIR_CH0_GPIO_Port, PELTIER_DIR_CH0_Pin, GPIO_PIN_RESET);/*TURN OFF CH 0 - HIGH SIDE MOSFET*/
+					HAL_GPIO_WritePin(PELTIER_DIR_CH1_GPIO_Port, PELTIER_DIR_CH1_Pin, GPIO_PIN_RESET);/*TURN OFF CH 1 - HIGH SIDE MOSFET*/
+				}
+			}
+			/*If temperature of NTC is between target and heat windup*/
+			else if((g_ApplCfg.fTargetTemperature - TEMPERATURE_COOL_WINDUP_OFFSET) < g_ApplCfg.fNtcTemp)
+			{
+				/*Turn OFF - SIGNAL FET*/
+				Drv_SetPeltierPower(PELTIER_ST_OFF);
+				g_ApplCfg.u8PeltierControlPercent = 0U;
+			}
+			else/*If NTC temperature is below target - HEAT*/
+			{
+				Drv_SetPeltierPower(PELTIER_ST_ON);
+				g_ApplCfg.u8PeltierControlPercent = 100U;
+			}
+		}
+		else
+		{
+			/*NOP*/
+		}
+	}
+	/*If NTC temperature is NOT VALID*/
+	else
+	{
+		/*Turn OFF - SIGNAL FET*/
+		HAL_GPIO_WritePin(PELTIER_SIG_CH0_GPIO_Port, PELTIER_SIG_CH0_Pin, GPIO_PIN_RESET);/*TURN OFF CH 0 - LOW SIDE MOSFET*/
+		HAL_GPIO_WritePin(PELTIER_SIG_CH1_GPIO_Port, PELTIER_SIG_CH1_Pin, GPIO_PIN_RESET);/*TURN OFF CH 1 - LOW SIDE MOSFET*/
+		/*Switch to DIR OFF now*/
+		HAL_GPIO_WritePin(PELTIER_DIR_CH0_GPIO_Port, PELTIER_DIR_CH0_Pin, GPIO_PIN_RESET);/*TURN OFF CH 0 - HIGH SIDE MOSFET*/
+		HAL_GPIO_WritePin(PELTIER_DIR_CH1_GPIO_Port, PELTIER_DIR_CH1_Pin, GPIO_PIN_RESET);/*TURN OFF CH 1 - HIGH SIDE MOSFET*/
+	}
+#endif
 }

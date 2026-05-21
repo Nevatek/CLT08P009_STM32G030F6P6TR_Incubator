@@ -61,7 +61,7 @@ ErrorCode ET6226M_SetMode(ET6226M_Mode_t mode);
 ErrorCode ET6226M_SetOperation(ET6226M_Operation_t operation);
 ErrorCode ET6226M_SetDisplayState(ET6226M_Display_t state);
 
-void ET6226M_DisplayNumber(uint16_t value);
+void ET6226M_DisplayNumber_F(float value);
 
 void ET6226M_TransferCompleteCallback(I2C_HandleTypeDef *hi2c);
 

@@ -330,10 +330,22 @@ static inline bool ET6226M_IsFlagSet(uint8_t flag)
 .Returns :
 .Note : use this function for all major initilization
 ******************************************************************************/
-void ET6226M_DisplayNumber(uint16_t value)
+void ET6226M_DisplayNumber_F(float value)
 {
-    uint16_t tempData = value;
-    uint8_t digits[ET6226M_DIGIT_COUNT];
+	uint16_t tempData = 0U;
+    uint8_t digits[ET6226M_DIGIT_COUNT] = {0U};
+
+    /*Adjust display value range*/
+    if(0 > value)
+    {
+    	value = 0;
+    }
+    else if(100 <= value)
+    {
+    	value = 99.9;
+    }
+    tempData = (uint16_t)(value * 10U);
+
 
     /* limit to 999 */
     if (tempData > ET6226M_MAX_DISPLAY)
