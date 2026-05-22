@@ -18,6 +18,7 @@ static float fCurrTempC = 0.0f;
 volatile static uint16_t u16ADCVal;
 static uint8_t g_u8DataCnt;
 static float fDataBuffer[MAX_ADC_DATA_CNT];
+static uint8_t u8SampelCnt = 0U;
 static uint8_t u8AdcRxFlag = FALSE;
 /******************************.FUNCTION_HEADER.******************************
 .Purpose : This function serve as one time call function of application layer
@@ -53,18 +54,23 @@ void Drv_Thermistor_Exe(void)
 	{
 		/*Copy temperature to buffer*/
 		fDataBuffer[g_u8DataCnt++] = Drv_ReadThermistor_TemperatureInCelcius();
+		u8SampelCnt++;
 		if((MAX_ADC_DATA_CNT) <= g_u8DataCnt)
 		{
 			g_u8DataCnt = 0U;
 		}
+		if((MAX_ADC_DATA_CNT) <= u8SampelCnt)
+		{
+			u8SampelCnt = MAX_ADC_DATA_CNT;
+		}
 
 		/*Perform average*/
 		fCurrTempC = 0.0f;
-		for(uint8_t u8nI = 0U ; u8nI < MAX_ADC_DATA_CNT ; ++u8nI)
+		for(uint8_t u8nI = 0U ; u8nI < u8SampelCnt ; ++u8nI)
 		{
 			fCurrTempC += fDataBuffer[u8nI];
 		}
-		fCurrTempC /= MAX_ADC_DATA_CNT;
+		fCurrTempC /= u8SampelCnt;
 		u8AdcRxFlag = FALSE;
 	}
 
