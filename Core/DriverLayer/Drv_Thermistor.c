@@ -14,12 +14,13 @@
 #define MAX_ADC_DATA_CNT 	(100U)
 
 static TimerTimeOut g_TempAvgTimer;
-static float fCurrTempC = 0.0f;
+static float fCurrTempC = 100.0f;/*Set to invalid temperature*/
 volatile static uint16_t u16ADCVal;
 static uint8_t g_u8DataCnt;
 static float fDataBuffer[MAX_ADC_DATA_CNT];
 static uint8_t u8SampelCnt = 0U;
 static uint8_t u8AdcRxFlag = FALSE;
+static uint8_t u8AdcValidFlag = FALSE;
 /******************************.FUNCTION_HEADER.******************************
 .Purpose : This function serve as one time call function of application layer
 .Returns :
@@ -42,6 +43,7 @@ void Drv_Thermistor_Init(void)
 {
 	TimeOut_Init(&(g_TempAvgTimer));
 	TimeOut_Start(&(g_TempAvgTimer) , NTC_TEMP_AVG_SAMPLE_TIMEOUT_MS);
+	HAL_ADC_Start_IT(GetInstance_ADC1());
 }
 /******************************.FUNCTION_HEADER.******************************
 .Purpose : This function serve as one time call function of application layer
@@ -72,6 +74,7 @@ void Drv_Thermistor_Exe(void)
 		}
 		fCurrTempC /= u8SampelCnt;
 		u8AdcRxFlag = FALSE;
+		u8AdcValidFlag = TRUE;
 	}
 
 	if(TRUE == TimeOut_IsTimerRunning(&(g_TempAvgTimer)))
@@ -100,6 +103,16 @@ void Drv_Thermistor_Exe(void)
 float Drv_GetCurrentTemperature(void)
 {
 	return (fCurrTempC);
+}
+
+/****************************** FUNCTION_HEADER ******************************
+.Purpose : Function for converting Temperature from Kelvin to Farenheit
+.Returns : Temperature in Farenheit
+.Note    :
+******************************************************************************/
+uint8_t Drv_GetStatusAdcValidity(void)
+{
+	return (u8AdcValidFlag);
 }
 /******************************.FUNCTION_HEADER.******************************
 .Purpose : This function serve as one time call function of application layer

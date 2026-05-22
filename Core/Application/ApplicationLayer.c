@@ -48,6 +48,7 @@ void ApplicationLayer_Init(void)
 	Drv_InitilizeExhaustFan();
 	Drv_Peltier_Init();
 	ApplicationLayer_TemperatureControl_Init();
+	HAL_Delay(1000U);/*1 Second startup delay*/
 }
 /******************************.FUNCTION_HEADER.******************************
 .Purpose : This function serve as one time call function of application layer
@@ -57,8 +58,11 @@ void ApplicationLayer_Init(void)
 void ApplicationLayer_Exe(void)
 {
 	Drv_Thermistor_Exe();
-	ET6226M_RefreshDisplay();
-	ApplicationLayer_TemperatureControl_Exe();
+	if(TRUE == Drv_GetStatusAdcValidity())
+	{
+		ET6226M_RefreshDisplay();
+		ApplicationLayer_TemperatureControl_Exe();
+	}
 }
 /******************************.FUNCTION_HEADER.******************************
 .Purpose : This function serve as one time call function of application layer22

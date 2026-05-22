@@ -23,4 +23,5 @@ void Drv_Thermistor_Init(void);
 void Drv_Thermistor_Exe(void);
 float Drv_GetCurrentTemperature(void);
 float Drv_ReadThermistor_TemperatureInCelcius(void);
+uint8_t Drv_GetStatusAdcValidity(void);
 #endif /* DRIVERLAYER_DRV_THERMISTOR_H_ */
