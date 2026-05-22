@@ -62,7 +62,7 @@ ErrorCode ET6226M_SetOperation(ET6226M_Operation_t operation);
 ErrorCode ET6226M_SetDisplayState(ET6226M_Display_t state);
 
 void ET6226M_DisplayNumber_F(float value);
-
+void ET6226M_DisplayErrorCode(uint8_t u8ErrCode);
 void ET6226M_TransferCompleteCallback(I2C_HandleTypeDef *hi2c);
 
 ET6226M_I2C_State_t ET6226M_I2C_GetState(void);

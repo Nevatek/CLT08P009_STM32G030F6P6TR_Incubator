@@ -104,8 +104,8 @@ void ApplicationLayer_TemperatureControl_Exe(void)
 		if(TRUE == TimeOut_IsTimeout(&(g_DispRefreshTimer)))
 		{
 			/*If temperature of NTC is in most accuracy region, Then display actual NTC temperature*/
-			if(g_ApplCfg.fNtcTemp < (g_ApplCfg.fTargetTemperature + DISPLAY_ACCURACY_OFFSET_MIN)
-					&& g_ApplCfg.fNtcTemp > (g_ApplCfg.fTargetTemperature - DISPLAY_ACCURACY_OFFSET_MIN))
+			if(g_ApplCfg.fNtcTemp <= (g_ApplCfg.fTargetTemperature + DISPLAY_ACCURACY_OFFSET_MIN)
+					&& g_ApplCfg.fNtcTemp >= (g_ApplCfg.fTargetTemperature - DISPLAY_ACCURACY_OFFSET_MIN))
 			{
 				ET6226M_DisplayNumber_F(g_ApplCfg.fNtcTemp);
 				g_ApplCfg.u8TempAchievedFlag = TRUE;/*Temperature achieved its target accuracy region*/
@@ -257,6 +257,8 @@ void ApplicationLayer_TemperatureControl_Exe(void)
 		/*Switch to DIR OFF now*/
 		HAL_GPIO_WritePin(PELTIER_DIR_CH0_GPIO_Port, PELTIER_DIR_CH0_Pin, GPIO_PIN_RESET);/*TURN OFF CH 0 - HIGH SIDE MOSFET*/
 		HAL_GPIO_WritePin(PELTIER_DIR_CH1_GPIO_Port, PELTIER_DIR_CH1_Pin, GPIO_PIN_RESET);/*TURN OFF CH 1 - HIGH SIDE MOSFET*/
+
+		ET6226M_DisplayErrorCode(ERROR_CODE_INVALID_NTC_TEMP);
 	}
 #endif
 }
