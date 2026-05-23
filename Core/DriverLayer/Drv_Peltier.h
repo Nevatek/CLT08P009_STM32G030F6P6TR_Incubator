@@ -40,5 +40,6 @@ void Drv_SetPeltierPower(PELTIER_DIR_STATE m_NewDir , uint8_t u8SpeedPercent);
 #else
 void Drv_SetPeltierPower(PELTIER_STATE m_St);
 void Drv_SetPeltierDirection(PELTIER_DIR_STATE m_NewDir);
+void Drv_ExecutePeltierDirection(PELTIER_DIR_STATE m_Dir);
 #endif
 #endif /* DRIVERLAYER_DRV_PELTIER_H_ */

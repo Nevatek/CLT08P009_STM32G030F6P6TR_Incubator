@@ -100,7 +100,7 @@ void Drv_Thermistor_Exe(void)
 .Returns : Temperature in Farenheit
 .Note    :
 ******************************************************************************/
-float Drv_GetCurrentTemperature(void)
+float Drv_GetCurrentTemperature_Block(void)
 {
 	return (fCurrTempC);
 }

@@ -11,19 +11,19 @@
 #define DISPLAY_REFRESH_TIMEOUT_MS 					(5000U)
 #define INCUBATOR_TARGET_TEMPERATURE 				(25U)/*25 Degree Celcuis*/
 
-#define TEMPERATURE_COOL_WINDUP_OFFSET				(0.1)/*0.3 Degree Celcuis*/
-#define TEMPERATURE_HEAT_WINDUP_OFFSET				(0.1)/*0.3 Degree Celcuis*/
+#define TEMPERATURE_HEAT_WINDUP_OFFSET				(0.7)/*0.3 Degree Celcuis*/
+#define TEMPERATURE_COOL_WINDUP_OFFSET				(0.15)/*0.3 Degree Celcuis*/
 
-#define TEMPERATURE_COOL_WINDUP_DIR_SW_OFFSET		(5)/*max offset from target temp at which direction changes to heat*/
-#define TEMPERATURE_HEAT_WINDUP_DIR_SW_OFFSET		(2)/*max offset from target temp at which direction changes to cool*/
+#define TEMPERATURE_COOL_WINDUP_DIR_SW_OFFSET		(0.8)/*max offset from target temp at which direction changes to heat*/
+#define TEMPERATURE_HEAT_WINDUP_DIR_SW_OFFSET		(0.5)/*max offset from target temp at which direction changes to cool*/
 
 #define PID_SAMPLE_TIME_MS 							(50U)
 
-#define MIN_VALID_NTC_TEMPERATURE 					(-25)
+#define MIN_VALID_NTC_TEMPERATURE 					(-10)
 #define MAX_VALID_NTC_TEMPERATURE 					(+85)
 
-#define DISPLAY_ACCURACY_OFFSET_MIN					(0.1)
-#define DISPLAY_ACCURACY_OFFSET_MAX					(0.7)
+#define DISPLAY_ACCURACY_OFFSET_MIN					(0.2)
+#define DISPLAY_ACCURACY_OFFSET_MAX					(0.9)
 
 #define PELTIER_PID_CONTROL 						(FALSE)
 
@@ -31,13 +31,14 @@
 
 typedef struct
 {
-	uint16_t u8ExFanSpeedPercent;
-	uint16_t u8PeltierControlPercent;
 	float fTargetTemperature;
-	float fNtcTemp;
-	float fPidOutput_Heater;
-	float fPidOutput_Cooler;
+	float fNtcTemp_Ambient;
+	float fNtcTemp_Block;
 	uint8_t u8TempAchievedFlag;
+	GPIO_PinState m_PelPin_Dir0;
+	GPIO_PinState m_PelPin_Dir1;
+	GPIO_PinState m_PelPin_Sig0;
+	GPIO_PinState m_PelPin_Sig1;
 }APPL;
 
 APPL* GetInstance_ApplCfg(void);

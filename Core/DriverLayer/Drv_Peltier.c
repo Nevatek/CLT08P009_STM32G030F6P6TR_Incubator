@@ -55,9 +55,8 @@ PELTIER_DIR_STATE Drv_GetPeltierDirection(void)
 .Returns :
 .Note : use this function for all major initilization
 ******************************************************************************/
-void Drv_SetPeltierDirection(PELTIER_DIR_STATE m_NewDir)
+void Drv_ExecutePeltierDirection(PELTIER_DIR_STATE m_Dir)
 {
-	(g_CurrDir = m_NewDir);
 	/*Signal pin will be treated as LOW SIDE mosfets*/
 	HAL_GPIO_WritePin(PELTIER_SIG_CH0_GPIO_Port, PELTIER_SIG_CH0_Pin, GPIO_PIN_RESET);/*TURN OFF CH 0 - LOW SIDE MOSFET*/
 	HAL_GPIO_WritePin(PELTIER_SIG_CH1_GPIO_Port, PELTIER_SIG_CH1_Pin, GPIO_PIN_RESET);/*TURN OFF CH 1 - LOW SIDE MOSFET*/
@@ -75,6 +74,19 @@ void Drv_SetPeltierDirection(PELTIER_DIR_STATE m_NewDir)
 	{
 		/*NOP*/
 	}
+}
+/******************************.FUNCTION_HEADER.******************************
+.Purpose : This function serve as one time call function of application layer
+.Returns :
+.Note : use this function for all major initilization
+******************************************************************************/
+void Drv_SetPeltierDirection(PELTIER_DIR_STATE m_NewDir)
+{
+	(g_CurrDir = m_NewDir);
+	HAL_GPIO_WritePin(PELTIER_SIG_CH0_GPIO_Port, PELTIER_SIG_CH0_Pin, GPIO_PIN_RESET);/*TURN OFF CH 0 - LOW SIDE MOSFET*/
+	HAL_GPIO_WritePin(PELTIER_SIG_CH1_GPIO_Port, PELTIER_SIG_CH1_Pin, GPIO_PIN_RESET);/*TURN OFF CH 1 - LOW SIDE MOSFET*/
+	HAL_GPIO_WritePin(PELTIER_DIR_CH0_GPIO_Port, PELTIER_DIR_CH0_Pin, GPIO_PIN_RESET);/*TURN ON CH 0 - HIGH SIDE MOSFET*/
+	HAL_GPIO_WritePin(PELTIER_DIR_CH1_GPIO_Port, PELTIER_DIR_CH1_Pin, GPIO_PIN_RESET);/*TURN OFF CH 1 - HIGH SIDE MOSFET*/
 }
 #endif
 #if (PELTIER_PID_CONTROL)
