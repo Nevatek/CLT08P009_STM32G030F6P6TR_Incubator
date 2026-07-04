@@ -58,9 +58,10 @@ void ApplicationLayer_Init(void)
 void ApplicationLayer_Exe(void)
 {
 	Drv_Thermistor_Exe();
+	ET6226M_RefreshDisplay();
+
 	if(TRUE == Drv_GetStatusAdcValidity())
 	{
-		ET6226M_RefreshDisplay();
 		ApplicationLayer_TemperatureControl_Exe();
 	}
 }
