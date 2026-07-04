@@ -16,23 +16,12 @@
 #include "main.h"
 #include "ErrorCode.h"
 #include <stdbool.h>
-
+#include "Drv_ET6226_Font.h"
 #include "Drv_ET6226.h"
 
 /****************************************************************************/
 /* Macro definitions														*/
 /****************************************************************************/
-
-#include <stdint.h>
-
-#define ET6226M_SEG_SG1   (1U << 0)  /* Segment A */
-#define ET6226M_SEG_SG2   (1U << 1)  /* Segment B */
-#define ET6226M_SEG_SG3   (1U << 2)  /* Segment C */
-#define ET6226M_SEG_SG4   (1U << 3)  /* Segment D */
-#define ET6226M_SEG_SG5   (1U << 4)  /* Segment E */
-#define ET6226M_SEG_SG6   (1U << 5)  /* Segment F */
-#define ET6226M_SEG_SG7   (1U << 6)  /* Segment G */
-#define ET6226M_SEG_DP    (1U << 7)  /* Decimal Point */
 
 
 /* Bit positions */
@@ -56,8 +45,6 @@
 #define ET6226M_CMD_KEY_READ    0x4F  // Key scan read command (not used)
 
 #define I2C_DATA_SIZE 			(1U)	//2 bytes
-
-#define ET6226M_TOTAL_DIGITS	(12U) 	// Total no of digits possible
 
 #define ET6226M_FLAG_GR1    (1U << 0)
 #define ET6226M_FLAG_GR2   	(1U << 1)
@@ -141,51 +128,15 @@ static const EtField_t g_EtFields[ET_FIELD_MAX] =
 		[ET_FIELD_BRIGHTNESS] = { ET6226M_BRIGHT_POS,  ET6226M_BRIGHT_MASK  }
 };
 
-// Seven segment encoding (bit mapping: DP-SG7-SG6-SG5-SG4-SG3-SG2-SG1)
-static const uint8_t ET6226M_DigitTable[ET6226M_TOTAL_DIGITS] =
-{
-		/* 0 */ (ET6226M_SEG_SG1 | ET6226M_SEG_SG2 | ET6226M_SEG_SG3 |
-				ET6226M_SEG_SG4 | ET6226M_SEG_SG5 | ET6226M_SEG_SG6),
-
-		/* 1 */ (ET6226M_SEG_SG2 | ET6226M_SEG_SG3),
-
-		/* 2 */ (ET6226M_SEG_SG1 | ET6226M_SEG_SG2 | ET6226M_SEG_SG4 |
-				ET6226M_SEG_SG5 | ET6226M_SEG_SG7),
-
-		/* 3 */ (ET6226M_SEG_SG1 | ET6226M_SEG_SG2 | ET6226M_SEG_SG3 |
-				ET6226M_SEG_SG4 | ET6226M_SEG_SG7),
-
-		/* 4 */ (ET6226M_SEG_SG2 | ET6226M_SEG_SG3 |
-				ET6226M_SEG_SG6 | ET6226M_SEG_SG7),
-
-		/* 5 */ (ET6226M_SEG_SG1 | ET6226M_SEG_SG3 | ET6226M_SEG_SG4 |
-				ET6226M_SEG_SG6 | ET6226M_SEG_SG7),
-
-		/* 6 */ (ET6226M_SEG_SG1 | ET6226M_SEG_SG3 | ET6226M_SEG_SG4 |
-				ET6226M_SEG_SG5 | ET6226M_SEG_SG6 | ET6226M_SEG_SG7),
-
-		/* 7 */ (ET6226M_SEG_SG1 | ET6226M_SEG_SG2 | ET6226M_SEG_SG3),
-
-		/* 8 */ (ET6226M_SEG_SG1 | ET6226M_SEG_SG2 | ET6226M_SEG_SG3 |
-				ET6226M_SEG_SG4 | ET6226M_SEG_SG5 | ET6226M_SEG_SG6 |
-				ET6226M_SEG_SG7),
-
-		/* 9 */ (ET6226M_SEG_SG1 | ET6226M_SEG_SG2 | ET6226M_SEG_SG3 |
-				ET6226M_SEG_SG4 | ET6226M_SEG_SG6 | ET6226M_SEG_SG7),
-
-		/* - */ (ET6226M_SEG_SG7),
-
-		/* E */ (ET6226M_SEG_SG1 | ET6226M_SEG_SG5 | ET6226M_SEG_SG6 |
-				ET6226M_SEG_SG4 | ET6226M_SEG_SG7 | ET6226M_SEG_DP),
-};
-
-
 static uint8_t tempData = 0;
 static I2C_HandleTypeDef* g_i2cHandler = NULL;
 static volatile ET6226M_I2C_State_t g_i2cState = ET6226M_I2C_IDLE;
 static volatile uint8_t g_TransferFlags = 0;
 static bool g_PacketFlags[ET6226M_PKT_MAX] = {0};
 static ET6226M_PacketId_t packetId = ET6226M_PKT_CONTROL;
+uint8_t special = 0;
+
+
 
 /****************************************************************************/
 /* Function Declarations												*/
@@ -219,7 +170,7 @@ void ET6226M_Init()
 	ET6226M_SetOperation(ET6226M_WAKE);
 	ET6226M_SetDisplayState(ET6226M_ON);
 
-	ET6226M_DisplayNumber(0);
+	ET6226M_DisplayString("ABC");
 }
 
 /******************************.FUNCTION_HEADER.******************************
@@ -313,7 +264,29 @@ ErrorCode ET6226M_SetDisplayState(ET6226M_Display_t state)
 	return status;
 }
 
-uint8_t special = 0;
+/******************************.FUNCTION_HEADER.******************************
+.Purpose : This function serve as one time call function of application layer
+.Returns :
+.Note : use this function for all major initilization
+ ******************************************************************************/
+void ET6226M_DisplayString(const char *str)
+{
+	for(int currDigit = 0;  currDigit < ET6226M_DIGIT_COUNT ; currDigit++)
+    {
+		if(!(*str))
+		{
+			break;
+		}
+        uint8_t seg = ET6226M_CharTable[(uint8_t)*str++];
+
+		if(seg != g_txPacket[currDigit].data)
+		{
+			g_txPacket[currDigit].data = seg;
+			g_PacketFlags[currDigit] = true;
+		}
+    }
+}
+
 /******************************.FUNCTION_HEADER.******************************
 .Purpose : This function serve as one time call function of application layer
 .Returns :

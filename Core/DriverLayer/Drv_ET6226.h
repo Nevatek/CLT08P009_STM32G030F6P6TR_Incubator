@@ -61,6 +61,7 @@ ErrorCode ET6226M_SetMode(ET6226M_Mode_t mode);
 ErrorCode ET6226M_SetOperation(ET6226M_Operation_t operation);
 ErrorCode ET6226M_SetDisplayState(ET6226M_Display_t state);
 
+void ET6226M_DisplayString(const char *str);
 void ET6226M_DisplayNumber(int16_t value);
 void ET6226M_DisplayNumber_F(float value);
 void ET6226M_DisplayErrorCode(uint8_t u8ErrCode);
