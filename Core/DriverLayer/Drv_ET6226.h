@@ -17,7 +17,7 @@
 
 typedef enum
 {
-	ET6226M_BRIGHT_LEVEL_0 = 0U,  	/* Default Highest brightness */
+	ET6226M_BRIGHT_LEVEL_MAX = 0U,  	/* Default Highest brightness */
 	ET6226M_BRIGHT_LEVEL_1 = 1U,	/* minimum brightness */
 	ET6226M_BRIGHT_LEVEL_2 = 2U,
 	ET6226M_BRIGHT_LEVEL_3 = 3U,
@@ -29,14 +29,14 @@ typedef enum
 
 typedef enum
 {
-	ET6226M_7_SEGMENT = 0U,
-	ET6226M_8_SEGMENT = 1U
+	ET6226M_8_SEGMENT	= 0U,
+	ET6226M_7_SEGMENT	= 1U
 } ET6226M_Mode_t;
 
 typedef enum
 {
-	ET6226M_SLEEP = 0U,
-	ET6226M_WAKE  = 1U
+	ET6226M_WAKE 	= 0U,
+	ET6226M_SLEEP 	= 1U
 } ET6226M_Operation_t;
 
 typedef enum
@@ -61,11 +61,12 @@ ErrorCode ET6226M_SetMode(ET6226M_Mode_t mode);
 ErrorCode ET6226M_SetOperation(ET6226M_Operation_t operation);
 ErrorCode ET6226M_SetDisplayState(ET6226M_Display_t state);
 
+void ET6226M_DisplayString(const char *str);
+void ET6226M_DisplayNumber(int16_t value);
 void ET6226M_DisplayNumber_F(float value);
 void ET6226M_DisplayErrorCode(uint8_t u8ErrCode);
+
 void ET6226M_TransferCompleteCallback(I2C_HandleTypeDef *hi2c);
-
 ET6226M_I2C_State_t ET6226M_I2C_GetState(void);
-
 
 #endif /* HARDWAREINTERFACE_DRV_ET6226_H_ */
