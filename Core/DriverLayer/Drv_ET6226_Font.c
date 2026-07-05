@@ -5,6 +5,7 @@
  *      Author: User
  */
 
+#include <stdint.h>
 #include "Drv_ET6226_Font.h"
 
 

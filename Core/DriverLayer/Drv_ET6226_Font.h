@@ -8,8 +8,6 @@
 #ifndef DRIVERLAYER_DRV_ET6226_FONT_H_
 #define DRIVERLAYER_DRV_ET6226_FONT_H_
 
-#include <stdint.h>
-
 #define ET6226M_TOTAL_DIGITS	(12U) 	// Total no of digits possible
 #define ET6226M_TOTAL_CHARS		(128U) 	// Total no of digits possible
 
