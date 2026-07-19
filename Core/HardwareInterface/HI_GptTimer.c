@@ -7,7 +7,7 @@
 #include "main.h"
 #include "ErrorCode.h"
 #include "HI_GptTimer.h"
-#if 0
+
 /*********************.HAL_GPIO_EXTI_Callback().*****************************
  .Purpose        : Callback for GPIO interrupt Rising and falling
  .Returns        :  RETURN_ERROR
@@ -78,4 +78,16 @@ void Drv_StopTimerPwm(TIM_HandleTypeDef* htim ,
 {
 	HAL_TIM_PWM_Stop(htim, Channel);
 }
-#endif
+/*********************.HAL_GPIO_EXTI_Callback().*****************************
+ .Purpose        : Callback for GPIO interrupt Rising and falling
+ .Returns        :  RETURN_ERROR
+					RETURN_SUCCESS
+ .Note           :
+ ****************************************************************************/
+void delayUs (TIM_HandleTypeDef *htim , uint16_t time)
+{
+	__HAL_TIM_SET_COUNTER(htim, 0);
+	HAL_TIM_Base_Start(htim);
+	while ((__HAL_TIM_GET_COUNTER(htim)) < time);
+	HAL_TIM_Base_Stop(htim);
+}

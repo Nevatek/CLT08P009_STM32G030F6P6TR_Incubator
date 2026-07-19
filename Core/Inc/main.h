@@ -55,6 +55,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 I2C_HandleTypeDef* GetInstance_I2C1(void);
 ADC_HandleTypeDef* GetInstance_ADC1(void);
+TIM_HandleTypeDef* GetInstance_Timer17_OW(void);
 #if (PELTIER_PID_CONTROL)
 TIM_HandleTypeDef* GetInstance_Timer16(void);
 TIM_HandleTypeDef* GetInstance_Timer1_P0(void);

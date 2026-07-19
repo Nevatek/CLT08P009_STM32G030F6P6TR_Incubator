@@ -45,6 +45,8 @@ ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
 
+TIM_HandleTypeDef htim17;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -54,6 +56,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_TIM17_Init(void);
 /* USER CODE BEGIN PFP */
 
 /******************************.FUNCTION_HEADER.******************************
@@ -94,6 +97,15 @@ TIM_HandleTypeDef* GetInstance_Timer3_P1(void)
 	return (&(htim3));
 }
 #endif
+/******************************.FUNCTION_HEADER.******************************
+.Purpose : This function serve as one time call function of application layer
+.Returns :
+.Note : use this function for all major initilization
+******************************************************************************/
+TIM_HandleTypeDef* GetInstance_Timer17_OW(void)
+{
+	return (&(htim17));
+}
 /******************************.FUNCTION_HEADER.******************************
 .Purpose : This function serve as one time call function of application layer
 .Returns :
@@ -150,6 +162,7 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
+  MX_TIM17_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -157,6 +170,8 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   ApplicationLayer_Init();/*Application layer code init*/
+
+
   while (1)
   {
 	  ApplicationLayer_Exe();/*Application layer code exe (SUPER LOOP)*/
@@ -320,6 +335,38 @@ static void MX_I2C1_Init(void)
 }
 
 /**
+  * @brief TIM17 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM17_Init(void)
+{
+
+  /* USER CODE BEGIN TIM17_Init 0 */
+
+  /* USER CODE END TIM17_Init 0 */
+
+  /* USER CODE BEGIN TIM17_Init 1 */
+
+  /* USER CODE END TIM17_Init 1 */
+  htim17.Instance = TIM17;
+  htim17.Init.Prescaler = 64-1;
+  htim17.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim17.Init.Period = 65535;
+  htim17.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim17.Init.RepetitionCounter = 0;
+  htim17.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim17) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM17_Init 2 */
+
+  /* USER CODE END TIM17_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -361,16 +408,23 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(NCC15_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : NCA1_Pin NCA2_Pin NCA3_Pin NCA4_Pin
-                           PELTIER_SIG_CH0_Pin FAN_ENABLE_Pin PELTIER_SIG_CH1_Pin PELTIER_DIR_CH1_Pin
-                           PELTIER_DIR_CH0_Pin NCA12_Pin */
-  GPIO_InitStruct.Pin = NCA1_Pin|NCA2_Pin|NCA3_Pin|NCA4_Pin
-                          |PELTIER_SIG_CH0_Pin|FAN_ENABLE_Pin|PELTIER_SIG_CH1_Pin|PELTIER_DIR_CH1_Pin
-                          |PELTIER_DIR_CH0_Pin|NCA12_Pin;
+  /*Configure GPIO pins : NCA1_Pin NCA2_Pin NCA4_Pin PELTIER_SIG_CH0_Pin
+                           FAN_ENABLE_Pin PELTIER_SIG_CH1_Pin PELTIER_DIR_CH1_Pin PELTIER_DIR_CH0_Pin
+                           NCA12_Pin */
+  GPIO_InitStruct.Pin = NCA1_Pin|NCA2_Pin|NCA4_Pin|PELTIER_SIG_CH0_Pin
+                          |FAN_ENABLE_Pin|PELTIER_SIG_CH1_Pin|PELTIER_DIR_CH1_Pin|PELTIER_DIR_CH0_Pin
+                          |NCA12_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : NCA3_Pin */
+  GPIO_InitStruct.Pin = NCA3_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(NCA3_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

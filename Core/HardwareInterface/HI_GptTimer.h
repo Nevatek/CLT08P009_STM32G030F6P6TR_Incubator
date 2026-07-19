@@ -7,7 +7,7 @@
 
 #ifndef HARDWAREINTERFACE_HI_GPTTIMER_H_
 #define HARDWAREINTERFACE_HI_GPTTIMER_H_
-#if 0
+
 #define CONVERT_HZ_TO_S(x)		(1U/x)
 #define CONVERT_HZ_TO_US(x)		(1000000U/x)
 
@@ -19,5 +19,5 @@ void Drv_StartTimerPwm(TIM_HandleTypeDef* htim ,
 					uint32_t Channel);
 void Drv_StopTimerPwm(TIM_HandleTypeDef* htim ,
 					uint32_t Channel);
-#endif
+void delayUs (TIM_HandleTypeDef *htim , uint16_t time);
 #endif /* HARDWAREINTERFACE_HI_GPTTIMER_H_ */
