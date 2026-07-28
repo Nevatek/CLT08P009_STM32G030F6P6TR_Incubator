@@ -15,10 +15,10 @@ Author Date Description
 #if (PELTIER_PID_CONTROL)
 #include "pid.h"
 #endif
-#include "Drv_DS182B20.h"
 #include "Drv_ET6226.h"
 #include "Drv_ExhaustFan.h"
 #include "Drv_Peltier.h"
+#include "Appl_ReadTemp.h"
 #include "ApplicationLayer.h"
 
 #if (PELTIER_PID_CONTROL)
@@ -47,7 +47,7 @@ void ApplicationLayer_Init(void)
 	ET6226M_Init();
 	Drv_InitilizeExhaustFan();
 	Drv_Peltier_Init();
-	DS18B20_Start();
+	Appl_InitTemperatureSensor();
 	ApplicationLayer_TemperatureControl_Init();
 	HAL_Delay(10U);/*10 MS startup delay*/
 }
@@ -86,7 +86,7 @@ void ApplicationLayer_TemperatureControl_Init(void)
 	/*PID - COOLER - END*/
 #else
 	Drv_SetPeltierPower(PELTIER_ST_OFF);
-	g_ApplCfg.fNtcTemp_Block = DS18B20_ReadTemperature();
+	g_ApplCfg.fNtcTemp_Block = Appl_ReadTemperature_InCelcius();
 	if(g_ApplCfg.fTargetTemperature <= g_ApplCfg.fNtcTemp_Block)
 	{
 		Drv_SetPeltierDirection(PELTIER_DIR_COOL);/*COOL now*/
@@ -112,7 +112,7 @@ void ApplicationLayer_TemperatureControl_Exe(void)
 	{
 		if(TRUE == TimeOut_IsTimeout(&(g_PidTriggerTimer)))
 		{
-			g_ApplCfg.fNtcTemp_Block = DS18B20_ReadTemperature();
+			g_ApplCfg.fNtcTemp_Block = Appl_ReadTemperature_InCelcius();
 #if (PELTIER_PID_CONTROL)
 			/*Calculate delta change in temperature*/
 			PID_Compute(&g_TPID_Cooler);
@@ -139,7 +139,7 @@ void ApplicationLayer_TemperatureControl_Exe(void)
 			}
 #else
 			/*If NTC temperature is VALID*/
-			if(TRUE == DS18B20_GetSensorState()
+			if(TRUE == Appl_WaitAndGetState_TempSensor()
 					&& MIN_VALID_NTC_TEMPERATURE < g_ApplCfg.fNtcTemp_Block &&
 					MAX_VALID_NTC_TEMPERATURE > g_ApplCfg.fNtcTemp_Block )
 			{
