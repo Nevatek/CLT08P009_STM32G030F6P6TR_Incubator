@@ -24,7 +24,7 @@
 #define NTC_FIXED_RESISTOR_OHM       (10000.0f)     /* R1 */
 #define NTC_NOMINAL_RESISTANCE_OHM   (10000.0f)     /* Resistance @25°C */
 #define NTC_NOMINAL_TEMP_C           (25.0f)
-#define NTC_BETA_COEFFICIENT         (3435.0f)
+#define NTC_BETA_COEFFICIENT         (3977.0f)
 
 #define ADC_MAX_COUNT                (4095.0f)      /* 12-bit ADC */
 #define KELVIN_OFFSET                (273.15f)

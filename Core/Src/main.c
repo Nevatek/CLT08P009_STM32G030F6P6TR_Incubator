@@ -390,9 +390,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(NCC15_GPIO_Port, NCC15_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, NCA1_Pin|NCA2_Pin|NCA3_Pin|NCA4_Pin
-                          |PELTIER_SIG_CH0_Pin|FAN_ENABLE_Pin|PELTIER_SIG_CH1_Pin|PELTIER_DIR_CH1_Pin
-                          |PELTIER_DIR_CH0_Pin|NCA12_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, NCA1_Pin|NCA4_Pin|PELTIER_SIG_CH0_Pin|FAN_ENABLE_Pin
+                          |PELTIER_SIG_CH1_Pin|PELTIER_DIR_CH1_Pin|PELTIER_DIR_CH0_Pin|NCA12_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : NC_Pin */
   GPIO_InitStruct.Pin = NC_Pin;
@@ -408,23 +407,20 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(NCC15_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : NCA1_Pin NCA2_Pin NCA4_Pin PELTIER_SIG_CH0_Pin
-                           FAN_ENABLE_Pin PELTIER_SIG_CH1_Pin PELTIER_DIR_CH1_Pin PELTIER_DIR_CH0_Pin
-                           NCA12_Pin */
-  GPIO_InitStruct.Pin = NCA1_Pin|NCA2_Pin|NCA4_Pin|PELTIER_SIG_CH0_Pin
-                          |FAN_ENABLE_Pin|PELTIER_SIG_CH1_Pin|PELTIER_DIR_CH1_Pin|PELTIER_DIR_CH0_Pin
-                          |NCA12_Pin;
+  /*Configure GPIO pins : NCA1_Pin NCA4_Pin PELTIER_SIG_CH0_Pin FAN_ENABLE_Pin
+                           PELTIER_SIG_CH1_Pin PELTIER_DIR_CH1_Pin PELTIER_DIR_CH0_Pin NCA12_Pin */
+  GPIO_InitStruct.Pin = NCA1_Pin|NCA4_Pin|PELTIER_SIG_CH0_Pin|FAN_ENABLE_Pin
+                          |PELTIER_SIG_CH1_Pin|PELTIER_DIR_CH1_Pin|PELTIER_DIR_CH0_Pin|NCA12_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : NCA3_Pin */
-  GPIO_InitStruct.Pin = NCA3_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  /*Configure GPIO pins : INP_NC_Pin INP_NCA3_Pin */
+  GPIO_InitStruct.Pin = INP_NC_Pin|INP_NCA3_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(NCA3_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
