@@ -15,15 +15,15 @@
 #define TEMPERATURE_HEAT_WINDUP_OFFSET				(0.7)/*0.3 Degree Celcuis*/
 #define TEMPERATURE_COOL_WINDUP_OFFSET				(0.15)/*0.3 Degree Celcuis*/
 
-#define TEMPERATURE_COOL_WINDUP_DIR_SW_OFFSET		(0.8)/*max offset from target temp at which direction changes to heat*/
-#define TEMPERATURE_HEAT_WINDUP_DIR_SW_OFFSET		(0.5)/*max offset from target temp at which direction changes to cool*/
+#define TEMPERATURE_COOL_WINDUP_DIR_SW_OFFSET		(3.5)/*max offset from target temp at which direction changes to heat*/
+#define TEMPERATURE_HEAT_WINDUP_DIR_SW_OFFSET		(3.5)/*max offset from target temp at which direction changes to cool*/
 
 #define PID_SAMPLE_TIME_MS 							(50U)
 
 #define MIN_VALID_NTC_TEMPERATURE 					(-10)
 #define MAX_VALID_NTC_TEMPERATURE 					(+85)
 
-#define DISPLAY_ACCURACY_OFFSET_MIN					(0.3)
+#define DISPLAY_ACCURACY_OFFSET_MIN					(0.1)
 #define DISPLAY_ACCURACY_OFFSET_MAX					(0.9)
 
 #define PELTIER_PID_CONTROL 						(FALSE)
