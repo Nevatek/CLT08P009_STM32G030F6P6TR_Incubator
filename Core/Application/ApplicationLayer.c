@@ -12,6 +12,7 @@ Author Date Description
 #include "math.h"
 #include "Datatype.h"
 #include "Timer.h"
+#include "HI_Adc.h"
 #if (PELTIER_PID_CONTROL)
 #include "pid.h"
 #endif
@@ -45,6 +46,7 @@ APPL* GetInstance_ApplCfg(void)
 void ApplicationLayer_Init(void)
 {
 	ET6226M_Init();
+	HI_AdcTaskAveraging_Init();
 	Drv_InitilizeExhaustFan();
 	Drv_Peltier_Init();
 	Appl_InitTemperatureSensor();
@@ -58,6 +60,7 @@ void ApplicationLayer_Init(void)
 ******************************************************************************/
 void ApplicationLayer_Exe(void)
 {
+	HI_AdcTaskAveraging();
 	ET6226M_RefreshDisplay();
 	ApplicationLayer_TemperatureControl_Exe();
 }
