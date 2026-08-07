@@ -21,8 +21,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "ApplicationLayer.h"
 #include "Drv_ET6226.h"
+#include "Drv_Peltier.h"
+#include "ApplicationLayer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
