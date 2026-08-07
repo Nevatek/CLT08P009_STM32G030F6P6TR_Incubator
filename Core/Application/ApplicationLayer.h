@@ -13,7 +13,7 @@
 #define INCUBATOR_TARGET_TEMPERATURE 				(25U)/*25 Degree Celcuis*/
 
 #define TEMPERATURE_HEAT_WINDUP_OFFSET				(0.5)/*0.3 Degree Celcuis*/
-#define TEMPERATURE_COOL_WINDUP_OFFSET				(0.5)/*0.3 Degree Celcuis*/
+#define TEMPERATURE_COOL_WINDUP_OFFSET				(0.35)/*0.3 Degree Celcuis*/
 
 #define TEMPERATURE_COOL_WINDUP_DIR_SW_OFFSET		(1.0)/*max offset from target temp at which direction changes to heat*/
 #define TEMPERATURE_HEAT_WINDUP_DIR_SW_OFFSET		(1.0)/*max offset from target temp at which direction changes to cool*/

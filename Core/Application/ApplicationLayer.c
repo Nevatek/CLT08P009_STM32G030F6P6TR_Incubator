@@ -46,12 +46,12 @@ APPL* GetInstance_ApplCfg(void)
 void ApplicationLayer_Init(void)
 {
 	ET6226M_Init();
-	HI_AdcTaskAveraging_Init();
 	Drv_InitilizeExhaustFan();
 	Drv_Peltier_Init();
+	HAL_Delay(10U);/*10 MS startup delay*/
+	HI_AdcTaskAveraging_Init();
 	Appl_InitTemperatureSensor();
 	ApplicationLayer_TemperatureControl_Init();
-	HAL_Delay(10U);/*10 MS startup delay*/
 }
 /******************************.FUNCTION_HEADER.******************************
 .Purpose : This function serve as one time call function of application layer
