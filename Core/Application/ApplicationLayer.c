@@ -48,9 +48,9 @@ void ApplicationLayer_Init(void)
 	ET6226M_Init();
 	Drv_InitilizeExhaustFan();
 	Drv_Peltier_Init();
-	HAL_Delay(10U);/*10 MS startup delay*/
-	HI_AdcTaskAveraging_Init();
 	Appl_InitTemperatureSensor();
+	HAL_Delay(500U);/*10 MS startup delay*/
+	HI_AdcTaskAveraging_Init();
 	ApplicationLayer_TemperatureControl_Init();
 }
 /******************************.FUNCTION_HEADER.******************************
